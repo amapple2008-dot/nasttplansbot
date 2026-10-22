@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+    <title>планы</title>
+<!-- Telegram WebApp JS SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+*{ 
+    box-sizing: border-box; 
+}
+body { 
+    margin: 0;
+    padding: 24px 14px;
+    background: radial-gradient(circle, #4a7fca 0%, #182470 50%, #280b35 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    font-family: "Trebuchet MS", 'Franklin Gothic Medium', Arial, sans-serif; 
+    font-size: 14px; 
+}
+.app { 
+    max-width: 440px; 
+    margin: 0 auto; 
+}
+h1 { 
+    color: #d3d1de; 
+    font-size: 29px; 
+    letter-spacing: -1px; 
+    margin: 4px 0 5px; 
+}
+h3 {
+    color:#240333; 
+    font-size: 15px; 
+    margin: 0 0 12px; 
+}
+.subtitle { 
+    color: #c8ced3; 
+    font-size: 13px; 
+    margin: 0; 
+}
+/* Прогресс пока не показываем */ 
+.progress-card { 
+    display: none; 
+}
+/* Форма добавления */ 
+.form-card { 
+    background: #656da4; 
+    border: 1px solid #09011c; 
+    border-radius: 17px; 
+    padding: 15px; 
+    margin: 20px 0; 
+}
+#task-input, 
+#task-date { 
+    display: block; 
+    width: 100%; 
+    padding: 11px 12px; 
+    margin: 8px 0; 
+    border: 1px solid #EEDDE4; 
+    border-radius: 11px; 
+    background: #FFFAFB; 
+    color: #573E49; 
+    font: inherit; 
+    outline: none; 
+}
+#task-input:focus, 
+#task-date:focus { 
+    border-color: #8a6ccf; 
+    box-shadow: 0 0 0 3px #F8E8EE; 
+}
+label { 
+    display: block; 
+    color: #787792; 
+    font-size: 12px; 
+    margin-top: 12px; 
+}
+button { 
+    font: inherit; 
+    cursor: pointer; 
+    transition: background 0.2s, transform 0.2s; 
+}
+.add-button { 
+    width: 100%; 
+    padding: 15px; 
+    margin-top: 7px; 
+    border: none; 
+    border-radius: 14px; 
+    background: #c2c6e7; 
+    color: #3e3e57; 
+    font-weight: bold; 
+}
+.add-button:hover { 
+    background: #58579b; 
+}
+.add-button:active { 
+    transform: scale(0.98); 
+}
+/* Компактный список */ 
+#task-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+}
+.task { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    background: #FFFFFF; 
+    border: 3px solid #e1dff0; 
+    border-radius: 13px; 
+    padding: 11px 10px; 
+    margin: 0; 
+}
+/* Круглая отметка выполнения */ 
+.task input[type="checkbox"] { 
+    appearance: none; 
+    -webkit-appearance: none; 
+    width: 21px; 
+    height: 21px; 
+    flex-shrink: 0; 
+    margin: 0; 
+    border: 1.5px solid #472a89; 
+    border-radius: 50%; 
+    background: #FFFFFF; 
+    cursor: pointer; 
+    display: grid; 
+    place-content: center; }
+.task input[type="checkbox"]:checked { 
+    background: #b7a9d9; 
+    border-color: #b4a9d9; 
+}
+.task input[type="checkbox"]:checked::after { 
+    content: "✓"; 
+    color: #FFFFFF; 
+    font-size: 13px; 
+    font-weight: bold; 
+}
+.task-info { 
+    flex: 1; 
+    min-width: 0; 
+    overflow-wrap: anywhere; 
+}
+.task-info > div:first-child { 
+    line-height: 1.4; 
+}
+.task-date { 
+    color: #9892ae; 
+    font-size: 11px; 
+    margin-top: 4px; 
+}
+.completed { 
+    text-decoration: line-through; 
+    opacity: 0.55; 
+}
+.delete-button { 
+    width: 28px; 
+    height: 28px; 
+    flex-shrink: 0; 
+    display: grid; 
+    place-items: center; 
+    padding: 0; 
+    border: none; 
+    border-radius: 9px; 
+    background: transparent; 
+    color: #b2a9c5; 
+    font-size: 18px; 
+}
+.delete-button:hover { 
+    background: #f3f0ff; 
+    color: #7367a9; 
+}
+#empty-message { 
+    text-align: center; 
+    color: #9592ae; 
+    font-size: 13px; 
+    padding: 18px 0; 
+}
+button:focus-visible, 
+.task input[type="checkbox"]:focus-visible { 
+    outline: 2px solid #B97F99; 
+    outline-offset: 3px; 
+}
+@media (max-width: 360px) { 
+    body { 
+        padding: 18px 10px; 
+    }
+h1 { 
+    font-size: 26px; 
+}
+.form-card { 
+    padding: 12px; 
+} 
+}
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <h1>планы</h1>
+    <p class="subtitle"> список планов 💗</p>
+
+    <!-- Форма добавления -->
+    <div class="form-card">
+        <h3>новый план</h3>
+        <input type="text" id="task-input" placeholder="что нужно сделать?">
+        <button class="add-button" id="add-btn">добавить</button>
+    </div>
+
+    <!-- Список задач -->
+    <div id="task-list"></div>
+    <div id="empty-message">список планов пуст</div>
+</div>
+
+<script>
+   // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Разворачиваем на весь экран
+    tg.setHeaderColor('#182470'); // Устанавливаем цвет шапки в тон градиента
+    tg.setBackgroundColor('#182470');
+
+    // Получение элементов
+    const taskInput = document.getElementById('task-input');
+    const addBtn = document.getElementById('add-btn');
+    const taskList = document.getElementById('task-list');
+    const emptyMessage = document.getElementById('empty-message');
+
+    // Загрузка задач из localStorage
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    // Отрисовка списка
+    function renderTasks() {
+        taskList.innerHTML = '';
+
+        if (tasks.length === 0) {
+            emptyMessage.style.display = 'block';
+        } else {
+            emptyMessage.style.display = 'none';
+        }
+
+        tasks.forEach((task, index) => {
+            const taskEl = document.createElement('div');
+            taskEl.className = 'task';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = task.completed;
+            checkbox.addEventListener('change', () => toggleTask(index));
+
+            const info = document.createElement('div');
+            info.className = 'task-info';
+            info.textContent = task.text;
+            
+            if (task.completed) {
+                info.classList.add('completed');
+            }
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-button';
+            deleteBtn.innerHTML = '&times;';
+            deleteBtn.addEventListener('click', () => deleteTask(index));
+
+            taskEl.appendChild(checkbox);
+            taskEl.appendChild(info);
+            taskEl.appendChild(deleteBtn);
+
+            taskList.appendChild(taskEl);
+        });
+
+        // Сохранение изменений в хранилище
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    // Добавление новой задачи
+    function addTask() {
+        const text = taskInput.value.trim();
+
+        if (!text) {
+            if (tg.showAlert) {
+                tg.showAlert('введите текст');
+            } else {
+                alert('введите текст');
+            }
+            return;
+        }
+
+        tasks.push({ text, completed: false });
+        taskInput.value = '';
+
+        // Вибрация при успешном добавлении
+        if (tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        renderTasks();
+    }
+
+    // Переключение состояния задачи
+    function toggleTask(index) {
+        tasks[index].completed = !tasks[index].completed;
+        
+        // Вибрация при чекауте
+        if (tg.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        renderTasks();
+    }
+
+    // Удаление задачи
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+
+        // Вибрация при удалении
+        if (tg.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        renderTasks();
+    }
+
+    // Обработчики событий
+    addBtn.addEventListener('click', addTask);
+    taskInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTask();
+    });
+
+    // Первоначальная отрисовка
+    renderTasks();
+</script>
+
+</body>
+</html>
